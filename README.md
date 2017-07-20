@@ -62,3 +62,5 @@ breakpoints.on('change', function(breakpoint)
     console.log("I used to be a great", breakpoint, "but then I took an arrow to the knee.");
 });
 ```
+
+`Breakpoints.js` updates when the page loads, when a change in window size is detected and when the device's orientation changes. Gotta be progressive.
