@@ -1,80 +1,125 @@
 /**
- * Breakpoints.js 1.0.0
- * Written by Ryan Boylett <ryan@boylett.uk>
+ * Breakpoints Manager 2.0.0
+ * Written by Ryan Boylett <boylett.uk>
  */
 
-(function()
+;var Breakpoints = function(options)
 {
-	var Breakpoints = [],
+	var $this = this;
+	
+	$this.triggers = [];
+	
+	$this.breakpoint = '';
+	$this.breakpoints = [];
 
-	Listener = (window.addEventListener !== undefined) ? 'addEventListener' : 'attachEvent',
-
-	RefreshBreakpoints = function()
+	$this.on = function(breakpoint, callback)
 	{
-		var WindowWidth = window.innerWidth;
+		$this.triggers.push([breakpoint, callback]);
 
-		for(var i = 0; i < Breakpoints.length; i ++)
+		return $this;
+	};
+
+	$this.test = function(breakpoint)
+	{
+		$this.update();
+
+		if(breakpoint !== undefined)
 		{
-			if(WindowWidth <= Breakpoints[i].width)
+			return (breakpoint == $this.breakpoint);
+		}
+
+		return $this.breakpoint;
+	};
+
+	$this.trigger = function(breakpoint)
+	{
+		for(var i = 0; i < $this.triggers.length; i ++)
+		{
+			if($this.triggers[i][0] == breakpoint || $this.triggers[i][0] == 'change')
 			{
-				if(!Breakpoints[i].active)
+				if($this.triggers[i][1].call(window, breakpoint) === false)
 				{
-					Breakpoints[i].active = true;
-					Breakpoints[i].activate();
-				}
-			}
-			else
-			{
-				if(Breakpoints[i].active)
-				{
-					Breakpoints[i].active = false;
-					Breakpoints[i].deactivate();
+					break;
 				}
 			}
 		}
 
-		while(document.documentElement.className.indexOf('  ') > -1)
-		{
-			document.documentElement.className = document.documentElement.className.replace('  ', ' ').trim();
-		}
+		return $this;
 	};
 
-	window.Breakpoint = function(Width)
+	$this.update = function()
 	{
-		var Breakpoint = this;
+		var width          = window.innerWidth,
+			new_breakpoint = $this.breakpoint;
 
-		Breakpoint.width = Math.round(parseFloat(Width));
-
-		Breakpoint.active = false;
-
-		Breakpoint.activate = function()
+		for(var i = 1; i < $this.breakpoints.length; i ++)
 		{
-			document.documentElement.className = document.documentElement.className + ' breakpoint-' + Breakpoint.width;
-		};
-
-		Breakpoint.deactivate = function()
-		{
-			document.documentElement.className = document.documentElement.className.replace(new RegExp('(^| )breakpoint-' + Breakpoint.width + '( |$)', 'i'), '$1$2');
-		};
-
-		Breakpoint.remove = function()
-		{
-			var NewList = [];
-
-			for(var i = 0; i < Breakpoints.length; i ++)
+			if(width > $this.breakpoints[i][1])
 			{
-				if(Breakpoints[i] != Breakpoint)
-				{
-					NewList.push(Breakpoints[i]);
-				}
+				new_breakpoint = $this.breakpoints[i - 1][0];
+
+				break;
+			}
+		}
+
+		if(new_breakpoint != $this.breakpoint)
+		{
+			if($this.triggers.length > 0)
+			{
+				$this.trigger(new_breakpoint);
+
+				$this.breakpoint = new_breakpoint;
+			}
+		}
+
+		return $this;
+	};
+
+	$this.set = function(breakpoints)
+	{
+		if(typeof breakpoints == 'object')
+		{
+			var sort_bp = [];
+
+			for(var bp_name in breakpoints)
+			{
+				sort_bp.push([bp_name, breakpoints[bp_name]]);
 			}
 
-			Breakpoints = NewList;
-		};
+			sort_bp.push(['zero', 0]);
 
-		Breakpoints.push(Breakpoint);
+			sort_bp.sort(function(a, b)
+			{
+				return b[1] - a[1];
+			});
+
+			$this.breakpoints = sort_bp;
+
+			$this.update();
+		}
+
+		return $this;
 	};
 
-	window[Listener](((Listener == 'attachEvent') ? 'on' : '') + 'resize', RefreshBreakpoints);
-	window[Listener](((Listener == 'attachEvent') ? 'on' : '') + 'load', RefreshBreakpoints);
-})();
+	if(options)
+	{
+		$this.set(options);
+	}
+
+	if(jQuery)
+	{
+		jQuery(window).on('load resize orientationchange', $this.update);
+	}
+	else if(window.addEventListener)
+	{
+		window.addEventListener('orientationchange', $this.update, false);
+		window.addEventListener('resize', $this.update, false);
+		window.addEventListener('load', $this.update, false);
+	}
+	else
+	{
+		window.attachEvent('onorientationchange', $this.update);
+		window.attachEvent('onresize', $this.update);
+		window.attachEvent('onload', $this.update);
+	}
+};
