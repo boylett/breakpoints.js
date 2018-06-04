@@ -1,6 +1,7 @@
 /**
- * Breakpoints Manager 2.0.0
- * Written by Ryan Boylett <boylett.uk>
+ * Breakpoints Manager
+ * Version 1.2.2
+ * © Ryan Boylett 2018 <http://boylett.uk/>
  */
 
 ;var Breakpoints = function(options)
@@ -12,9 +13,62 @@
 	$this.breakpoint = '';
 	$this.breakpoints = [];
 
-	$this.on = function(breakpoint, callback)
+	$this.get = function(key)
 	{
-		$this.triggers.push([breakpoint, callback]);
+		for(var i = 0; i < $this.breakpoints.length; i ++)
+		{
+			if($this.breakpoints[i][0] == key)
+			{
+				return $this.breakpoints[i][1];
+			}
+		}
+
+		return null;
+	};
+
+	$this.on = function(breakpoints, callback)
+	{
+		breakpoints = breakpoints.replace(/\s/g, ',').split(',');
+
+		for(var i = 0; i < breakpoints.length; i ++)
+		{
+			var breakpoint = breakpoints[i].trim();
+
+			if(breakpoint)
+			{
+				$this.triggers.push([breakpoint, callback]);
+			}
+		}
+
+		return $this;
+	};
+
+	$this.trigger = function(breakpoints)
+	{
+		breakpoints = breakpoints.replace(/\s/g, ',').split(',');
+
+		breakpointsloop:
+		for(var i = 0; i < breakpoints.length; i ++)
+		{
+			var breakpoint = breakpoints[i].trim();
+
+			if(breakpoint)
+			{
+				triggersloop:
+				for(var j = 0; j < $this.triggers.length; j ++)
+				{
+					var trigger = $this.triggers[j];
+
+					if(trigger[0] == breakpoint || trigger[0] == 'change')
+					{
+						if(trigger[1].call(window, breakpoint) === false)
+						{
+							break breakpointsloop;
+						}
+					}
+				}
+			}
+		}
 
 		return $this;
 	};
@@ -31,23 +85,7 @@
 		return $this.breakpoint;
 	};
 
-	$this.trigger = function(breakpoint)
-	{
-		for(var i = 0; i < $this.triggers.length; i ++)
-		{
-			if($this.triggers[i][0] == breakpoint || $this.triggers[i][0] == 'change')
-			{
-				if($this.triggers[i][1].call(window, breakpoint) === false)
-				{
-					break;
-				}
-			}
-		}
-
-		return $this;
-	};
-
-	$this.update = function()
+	$this.update = function(forced)
 	{
 		var width          = window.innerWidth,
 			new_breakpoint = $this.breakpoint;
@@ -62,7 +100,7 @@
 			}
 		}
 
-		if(new_breakpoint != $this.breakpoint)
+		if(new_breakpoint != $this.breakpoint || forced)
 		{
 			if($this.triggers.length > 0)
 			{
@@ -71,6 +109,39 @@
 				$this.breakpoint = new_breakpoint;
 			}
 		}
+
+		return $this;
+	};
+
+	$this.add = function(key, width)
+	{
+		$this.breakpoints.push([key, width]);
+
+		$this.breakpoints.sort(function(a, b)
+		{
+			return b[1] - a[1];
+		});
+
+		$this.update();
+
+		return $this;
+	};
+
+	$this.remove = function(key)
+	{
+		var new_bp = [];
+
+		for(var i = 0; i < $this.breakpoints.length; i ++)
+		{
+			if($this.breakpoints[i][0] != key)
+			{
+				new_bp.push($this.breakpoints[i]);
+			}
+		}
+
+		$this.breakpoints = new_bp;
+
+		$this.update();
 
 		return $this;
 	};
