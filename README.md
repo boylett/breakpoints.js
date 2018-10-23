@@ -4,7 +4,7 @@ Lightweight library for breakpoint detection.
 ### Installation & Initialization
 Add the following script tag to your `<head>` element:
 ```html
-<script type="text/javascript" src="breakpoints.min.js"></script>
+<script type="text/javascript" src="breakpoints.js"></script>
 ```
 
 Now, in your site's JavaScript file or wherever you're doing your dirty work, create a new instance and supply some breakpoints:
