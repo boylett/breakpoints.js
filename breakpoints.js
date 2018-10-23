@@ -1,19 +1,26 @@
 /**
- * Breakpoints Manager
- * Version 1.2.2
- * © Ryan Boylett 2018 <http://boylett.uk/>
+ * Breakpoints Factory
+ * @author  Ryan Boylett <http://boylett.uk/>
+ * @version 0.0.2
+ * 
+ * Usage example:
+ *
+ * var bp = new Breakpoints({ desktop: 1600, mobile: 575 });
+ *
+ * bp.on('change', function(device){ console.log('I\'m a ' + device + ' device!\'); });
+ * bp.on('desktop', function(){ console.log('I\'m a desktop device!\'); });
+ * bp.on('mobile', function(){ console.log('I\'m a mobile device!\'); });
  */
-
 ;var Breakpoints = function(options)
 {
 	var $this = this;
 	
-	$this.triggers = [];
+	this.triggers = [];
 	
-	$this.breakpoint = '';
-	$this.breakpoints = [];
+	this.breakpoint = '';
+	this.breakpoints = [];
 
-	$this.get = function(key)
+	this.get = function(key)
 	{
 		for(var i = 0; i < $this.breakpoints.length; i ++)
 		{
@@ -26,7 +33,7 @@
 		return null;
 	};
 
-	$this.on = function(breakpoints, callback)
+	this.on = function(breakpoints, callback)
 	{
 		breakpoints = breakpoints.replace(/\s/g, ',').split(',');
 
@@ -43,7 +50,7 @@
 		return $this;
 	};
 
-	$this.trigger = function(breakpoints)
+	this.trigger = function(breakpoints)
 	{
 		breakpoints = breakpoints.replace(/\s/g, ',').split(',');
 
@@ -73,7 +80,7 @@
 		return $this;
 	};
 
-	$this.test = function(breakpoint)
+	this.test = function(breakpoint)
 	{
 		$this.update();
 
@@ -85,7 +92,7 @@
 		return $this.breakpoint;
 	};
 
-	$this.update = function(forced)
+	this.update = function(forced)
 	{
 		var width          = window.innerWidth,
 			new_breakpoint = $this.breakpoint;
@@ -113,7 +120,7 @@
 		return $this;
 	};
 
-	$this.add = function(key, width)
+	this.add = function(key, width)
 	{
 		$this.breakpoints.push([key, width]);
 
@@ -127,7 +134,7 @@
 		return $this;
 	};
 
-	$this.remove = function(key)
+	this.remove = function(key)
 	{
 		var new_bp = [];
 
@@ -146,7 +153,7 @@
 		return $this;
 	};
 
-	$this.set = function(breakpoints)
+	this.set = function(breakpoints)
 	{
 		if(typeof breakpoints == 'object')
 		{
@@ -174,23 +181,23 @@
 
 	if(options)
 	{
-		$this.set(options);
+		this.set(options);
 	}
 
 	if(jQuery)
 	{
-		jQuery(window).on('load resize orientationchange', $this.update);
+		jQuery(window).on('load resize orientationchange', this.update);
 	}
 	else if(window.addEventListener)
 	{
-		window.addEventListener('orientationchange', $this.update, false);
-		window.addEventListener('resize', $this.update, false);
-		window.addEventListener('load', $this.update, false);
+		window.addEventListener('orientationchange', this.update, false);
+		window.addEventListener('resize', this.update, false);
+		window.addEventListener('load', this.update, false);
 	}
 	else
 	{
-		window.attachEvent('onorientationchange', $this.update);
-		window.attachEvent('onresize', $this.update);
-		window.attachEvent('onload', $this.update);
+		window.attachEvent('onorientationchange', this.update);
+		window.attachEvent('onresize', this.update);
+		window.attachEvent('onload', this.update);
 	}
 };
