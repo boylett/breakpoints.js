@@ -1,6 +1,6 @@
 /**
  * Breakpoints Factory
- * @author  Ryan Boylett <http://boylett.uk/>
+ * @author  Rytoonist <https://rytoonist.com/>
  * @version 0.0.2
  * 
  * Usage example:
